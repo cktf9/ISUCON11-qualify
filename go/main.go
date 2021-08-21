@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -268,8 +269,21 @@ func main() {
 		return
 	}
 
-	serverPort := fmt.Sprintf(":%v", getEnv("SERVER_APP_PORT", "3000"))
-	e.Logger.Fatal(e.Start(serverPort))
+	socket_file := "/tmp/isucondition.go.sock"
+	os.Remove(socket_file)
+	l, err := net.Listen("unix", socket_file)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	err = os.Chmod(socket_file, 0777)
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	e.Listener = l
+
+	//serverPort := fmt.Sprintf(":%v", getEnv("SERVER_APP_PORT", "3000"))
+	//e.Logger.Fatal(e.Start(serverPort))
+	e.Logger.Fatal(e.Start(""))
 }
 
 func getSession(r *http.Request) (*sessions.Session, error) {
@@ -1139,6 +1153,8 @@ func postIsuCondition(c echo.Context) error {
 	if count == 0 {
 		return c.String(http.StatusNotFound, "not found: isu")
 	}
+
+	uuids := make([]string, len(req))
 
 	for _, cond := range req {
 		timestamp := time.Unix(cond.Timestamp, 0)
