@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -319,7 +318,8 @@ func postInitialize(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request body")
 	}
 
-	cmd := exec.Command("../sql/init.sh")
+	//cmd := exec.Command("../sql/init.sh")
+	cmd := exec.Command(`curl -X POST -H "Content-Type: application/json" -d '{"jia_service_url":""}' http://isucondition-2.t.isucon.dev:3000/initialize`)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stderr
 	err = cmd.Run()
@@ -329,11 +329,6 @@ func postInitialize(c echo.Context) error {
 	}
 
 	jiaServiceURL = request.JIAServiceURL
-
-	if err != nil {
-		c.Logger().Errorf("db error : %v", err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
 
 	return c.JSON(http.StatusOK, InitializeResponse{
 		Language: "go",
