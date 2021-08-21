@@ -319,7 +319,7 @@ func postInitialize(c echo.Context) error {
 	}
 
 	//cmd := exec.Command("../sql/init.sh")
-	cmd := exec.Command(`curl -X POST -H "Content-Type: application/json" -d '{"jia_service_url":""}' http://isucondition-2.t.isucon.dev:3000/initialize`)
+	cmd := exec.Command(`./init.sh`)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stderr
 	err = cmd.Run()
