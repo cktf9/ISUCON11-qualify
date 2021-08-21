@@ -60,6 +60,8 @@ var (
 	trendJSONCache []byte
 
 	jiaServiceURL string
+
+	trendInterval time.Time
 )
 
 type Config struct {
@@ -240,6 +242,7 @@ func main() {
 	echopprof.Wrap(e)
 
 	trendJSONCache = []byte(`[{"character":"いじっぱり","info":[{"isu_id":26,"timestamp":1627902571},{"isu_id":27,"timestamp":1620897370}],"warning":[{"isu_id":1,"timestamp":1622959149},{"isu_id":28,"timestamp":1622215654}],"critical":[]},{"character":"うっかりや","info":[],"warning":[{"isu_id":2,"timestamp":1622959149}],"critical":[]},{"character":"おくびょう","info":[],"warning":[{"isu_id":3,"timestamp":1622959149}],"critical":[]},{"character":"おだやか","info":[],"warning":[{"isu_id":4,"timestamp":1622959149}],"critical":[]},{"character":"おっとり","info":[{"isu_id":5,"timestamp":1622959149}],"warning":[],"critical":[]},{"character":"おとなしい","info":[],"warning":[{"isu_id":6,"timestamp":1625683480}],"critical":[]},{"character":"がんばりや","info":[{"isu_id":7,"timestamp":1625683480}],"warning":[],"critical":[]},{"character":"きまぐれ","info":[],"warning":[{"isu_id":8,"timestamp":1625683480}],"critical":[]},{"character":"さみしがり","info":[],"warning":[{"isu_id":9,"timestamp":1625683480}],"critical":[]},{"character":"しんちょう","info":[],"warning":[{"isu_id":10,"timestamp":1625683480}],"critical":[]},{"character":"すなお","info":[],"warning":[{"isu_id":11,"timestamp":1625683480}],"critical":[]},{"character":"ずぶとい","info":[{"isu_id":12,"timestamp":1625683480}],"warning":[],"critical":[]},{"character":"せっかち","info":[],"warning":[{"isu_id":13,"timestamp":1625683480}],"critical":[]},{"character":"てれや","info":[],"warning":[{"isu_id":14,"timestamp":1625683480}],"critical":[]},{"character":"なまいき","info":[],"warning":[{"isu_id":15,"timestamp":1625683480}],"critical":[]},{"character":"のうてんき","info":[],"warning":[{"isu_id":16,"timestamp":1625683480}],"critical":[]},{"character":"のんき","info":[],"warning":[{"isu_id":17,"timestamp":1625683480}],"critical":[]},{"character":"ひかえめ","info":[],"warning":[{"isu_id":18,"timestamp":1625683480}],"critical":[]},{"character":"まじめ","info":[{"isu_id":19,"timestamp":1625683480}],"warning":[],"critical":[]},{"character":"むじゃき","info":[],"warning":[{"isu_id":20,"timestamp":1625683480}],"critical":[]},{"character":"やんちゃ","info":[{"isu_id":21,"timestamp":1625683480}],"warning":[],"critical":[]},{"character":"ゆうかん","info":[{"isu_id":22,"timestamp":1625683480}],"warning":[],"critical":[]},{"character":"ようき","info":[{"isu_id":23,"timestamp":1625683480}],"warning":[],"critical":[]},{"character":"れいせい","info":[],"warning":[],"critical":[{"isu_id":24,"timestamp":1625683480}]},{"character":"わんぱく","info":[],"warning":[{"isu_id":25,"timestamp":1625683480}],"critical":[]}]`)
+	trendInterval = time.Now()
 
 	jiaServiceURL = ""
 
@@ -1136,7 +1139,9 @@ func calculateConditionLevel(condition string) (string, error) {
 // GET /api/trend
 // ISUの性格毎の最新のコンディション情報
 func getTrend(c echo.Context) error {
-	go refreshTrend()
+	if time.Now().Sub(trendInterval).Seconds() > 5 {
+		go refreshTrend()
+	}
 	return c.JSONBlob(http.StatusOK, trendJSONCache)
 }
 func refreshTrend() (error) {
