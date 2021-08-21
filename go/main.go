@@ -1154,7 +1154,7 @@ func postIsuCondition(c echo.Context) error {
 		return c.String(http.StatusNotFound, "not found: isu")
 	}
 
-	uuids := make([]string, len(req))
+	//uuids := make([]string, len(req))
 
 	for _, cond := range req {
 		timestamp := time.Unix(cond.Timestamp, 0)
