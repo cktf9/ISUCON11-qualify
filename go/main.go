@@ -54,6 +54,8 @@ var (
 	jiaJWTSigningKey *ecdsa.PublicKey
 
 	postIsuConditionTargetBaseURL string // JIAへのactivate時に登録する，ISUがconditionを送る先のURL
+
+	trendJSONCache []byte
 )
 
 type Config struct {
@@ -222,6 +224,8 @@ func main() {
 
 	//TODO: REMOVE
 	echopprof.Wrap(e)
+
+	trendJSONCache = []byte{}
 
 	e.POST("/initialize", postInitialize)
 
@@ -1086,6 +1090,9 @@ func calculateConditionLevel(condition string) (string, error) {
 // GET /api/trend
 // ISUの性格毎の最新のコンディション情報
 func getTrend(c echo.Context) error {
+	if len(trendJSONCache) > 0 {
+		return c.JSONBlob(http.StatusOK, trendJSONCache)
+	}
 	characterList := []Isu{}
 	err := db.Select(&characterList, "SELECT `character` FROM `isu` GROUP BY `character`")
 	if err != nil {
@@ -1160,8 +1167,11 @@ func getTrend(c echo.Context) error {
 				Critical:  characterCriticalIsuConditions,
 			})
 	}
+	trendJSONCache, err = json.Marshal(res)
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSONBlob(http.StatusOK, trendJSONCache)
+
+	//return c.JSON(http.StatusOK, res)
 }
 
 // POST /api/condition/:jia_isu_uuid
