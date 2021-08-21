@@ -24,6 +24,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+
+	//TODO: REMOVE
+	"github.com/hiko1129/echo-pprof"
 )
 
 const (
@@ -213,6 +216,9 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	//TODO: REMOVE
+	echopprof.Wrap(e)
 
 	e.POST("/initialize", postInitialize)
 
