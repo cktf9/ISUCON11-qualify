@@ -1144,6 +1144,7 @@ func calculateConditionLevel(condition string) (string, error) {
 // ISUの性格毎の最新のコンディション情報
 func getTrend(c echo.Context) error {
 	if time.Now().Sub(trendInterval).Seconds() > 5 {
+		trendInterval = time.Now()
 		refreshTrend()
 	}
 	return c.JSONBlob(http.StatusOK, trendJSONCache)
