@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -269,6 +270,9 @@ func main() {
 		return
 	}
 
+	//_ = os.RemoveAll("lcon")
+	//os.Mkdir("lcon",0777)
+
 	socket_file := "/tmp/isucondition.go.sock"
 	os.Remove(socket_file)
 	l, err := net.Listen("unix", socket_file)
@@ -507,7 +511,7 @@ func getIsuList(c echo.Context) error {
 	for _, isu := range isuList {
 		var lastCondition IsuCondition
 		foundLastCondition := true
-		err = tx.Get(&lastCondition, "SELECT * FROM `isu_condition` WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1",
+		err = tx.Get(&lastCondition, "SELECT * FROM `isu_condition` WHERE `jia_isu_uuid` = ? ORDER BY `id` DESC LIMIT 1",
 			isu.JIAIsuUUID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -1155,6 +1159,8 @@ func postIsuCondition(c echo.Context) error {
 	}
 
 	isuConditions := make([]IsuCondition, len(req))
+	latestCondition := ""
+	latestTime := int64(0)
 	for i, cond := range req {
 		if !isValidConditionFormat(cond.Condition) {
 			return c.String(http.StatusBadRequest, "bad request body")
@@ -1166,7 +1172,14 @@ func postIsuCondition(c echo.Context) error {
 			Condition:  cond.Condition,
 			Message:    cond.Message,
 		}
+		if latestTime < cond.Timestamp {
+			latestTime = cond.Timestamp
+			latestCondition = cond.Condition
+		}
 	}
+	sort.Slice(isuConditions, func(i, j int) bool {
+		return isuConditions[i].Timestamp.Before(isuConditions[j].Timestamp)
+	})
 
 	_, err = tx.NamedExec("INSERT INTO `isu_condition`" +
 		" (`jia_isu_uuid`, `timestamp`, `is_sitting`, `condition`, `message`)" +
@@ -1176,12 +1189,20 @@ func postIsuCondition(c echo.Context) error {
 		c.Logger().Errorf("db error: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-
+	/*f, err := os.Create("lcon/" + jiaIsuUUID)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	defer f.Close()*/
 	err = tx.Commit()
 	if err != nil {
 		c.Logger().Errorf("db error: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	//_, err = f.WriteString(latestCondition)
+	//if err != nil {
+	//	return c.NoContent(http.StatusInternalServerError)
+	//}
 
 	return c.NoContent(http.StatusAccepted)
 }
