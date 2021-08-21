@@ -1159,8 +1159,8 @@ func postIsuCondition(c echo.Context) error {
 	}
 
 	isuConditions := make([]IsuCondition, len(req))
-	latestCondition := ""
-	latestTime := int64(0)
+	//latestCondition := ""
+	//latestTime := int64(0)
 	for i, cond := range req {
 		if !isValidConditionFormat(cond.Condition) {
 			return c.String(http.StatusBadRequest, "bad request body")
@@ -1172,10 +1172,10 @@ func postIsuCondition(c echo.Context) error {
 			Condition:  cond.Condition,
 			Message:    cond.Message,
 		}
-		if latestTime < cond.Timestamp {
+		/*if latestTime < cond.Timestamp {
 			latestTime = cond.Timestamp
 			latestCondition = cond.Condition
-		}
+		}*/
 	}
 	sort.Slice(isuConditions, func(i, j int) bool {
 		return isuConditions[i].Timestamp.Before(isuConditions[j].Timestamp)
