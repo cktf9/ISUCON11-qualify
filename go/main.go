@@ -62,6 +62,8 @@ var (
 	jiaServiceURL string
 
 	trendInterval time.Time
+
+	isuListCache map[string]bool
 )
 
 type Config struct {
@@ -293,6 +295,8 @@ func main() {
 		e.Logger.Fatalf("missing: POST_ISUCONDITION_TARGET_BASE_URL")
 		return
 	}
+
+	isuListCache = map[string]bool{}
 
 	//_ = os.RemoveAll("lcon")
 	//os.Mkdir("lcon",0777)
@@ -1140,7 +1144,7 @@ func calculateConditionLevel(condition string) (string, error) {
 // ISUの性格毎の最新のコンディション情報
 func getTrend(c echo.Context) error {
 	if time.Now().Sub(trendInterval).Seconds() > 5 {
-		go refreshTrend()
+		refreshTrend()
 	}
 	return c.JSONBlob(http.StatusOK, trendJSONCache)
 }
@@ -1254,15 +1258,18 @@ func postIsuCondition(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	//defer tx.Rollback()
-
-	var count int
-	err = db.Get(&count, "SELECT COUNT(*) FROM `isu` WHERE `jia_isu_uuid` = ?", jiaIsuUUID)
-	if err != nil {
-		c.Logger().Errorf("db error: %v", err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	if count == 0 {
-		return c.String(http.StatusNotFound, "not found: isu")
+	if !isExistIsu(jiaIsuUUID) {
+		var count int
+		err = db.Get(&count, "SELECT COUNT(*) FROM `isu` WHERE `jia_isu_uuid` = ?", jiaIsuUUID)
+		if err != nil {
+			c.Logger().Errorf("db error: %v", err)
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		if count == 0 {
+			return c.String(http.StatusNotFound, "not found: isu")
+		} else {
+			isuListCache[jiaIsuUUID] = true
+		}
 	}
 
 	isuConditions := make([]IsuCondition, len(req))
@@ -1362,4 +1369,11 @@ func getDBFromUUID(uuid string) *sqlx.DB {
 	} else {
 		return db_3
 	}
+}
+
+func isExistIsu(uuid string) bool {
+	if _, ok := isuListCache[uuid]; ok {
+		return true
+	}
+	return false
 }
