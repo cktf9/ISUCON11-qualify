@@ -377,8 +377,8 @@ func postInitialize(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "bad request body")
 	}
 
-	//cmd := exec.Command("../sql/init.sh")
-	cmd := exec.Command(`./init.sh`)
+	cmd := exec.Command("../sql/init.sh")
+	//cmd := exec.Command(`./init.sh`)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stderr
 	err = cmd.Run()
