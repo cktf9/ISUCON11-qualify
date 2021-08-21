@@ -245,12 +245,12 @@ func main() {
 
 	e.POST("/api/condition/:jia_isu_uuid", postIsuCondition)
 
-	e.GET("/", getIndex)
+	//e.GET("/", getIndex)
 	e.GET("/isu/:jia_isu_uuid", getIndex)
 	e.GET("/isu/:jia_isu_uuid/condition", getIndex)
 	e.GET("/isu/:jia_isu_uuid/graph", getIndex)
 	e.GET("/register", getIndex)
-	e.Static("/assets", frontendContentsPath+"/assets")
+	//e.Static("/assets", frontendContentsPath+"/assets")
 
 	mySQLConnectionData = NewMySQLConnectionEnv()
 
@@ -1220,6 +1220,6 @@ func isValidConditionFormat(conditionStr string) bool {
 	return (idxCondStr == len(conditionStr))
 }
 
-func getIndex(c echo.Context) error {
+/*func getIndex(c echo.Context) error {
 	return c.File(frontendContentsPath + "/index.html")
-}
+}*/
