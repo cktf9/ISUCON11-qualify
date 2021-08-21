@@ -246,10 +246,10 @@ func main() {
 	e.POST("/api/condition/:jia_isu_uuid", postIsuCondition)
 
 	//e.GET("/", getIndex)
-	e.GET("/isu/:jia_isu_uuid", getIndex)
-	e.GET("/isu/:jia_isu_uuid/condition", getIndex)
-	e.GET("/isu/:jia_isu_uuid/graph", getIndex)
-	e.GET("/register", getIndex)
+	//e.GET("/isu/:jia_isu_uuid", getIndex)
+	//e.GET("/isu/:jia_isu_uuid/condition", getIndex)
+	//e.GET("/isu/:jia_isu_uuid/graph", getIndex)
+	//e.GET("/register", getIndex)
 	//e.Static("/assets", frontendContentsPath+"/assets")
 
 	mySQLConnectionData = NewMySQLConnectionEnv()
@@ -1118,7 +1118,7 @@ func getTrend(c echo.Context) error {
 // ISUからのコンディションを受け取る
 func postIsuCondition(c echo.Context) error {
 	// TODO: 一定割合リクエストを落としてしのぐようにしたが、本来は全量さばけるようにすべき
-	dropProbability := 0.9
+	dropProbability := 0.85
 	if rand.Float64() <= dropProbability {
 		//c.Logger().Warnf("drop post isu condition request")
 		return c.NoContent(http.StatusAccepted)
